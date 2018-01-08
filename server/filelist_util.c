@@ -213,7 +213,7 @@ int EventAddRegistry(char *event_file, char *username, int n_of_seats, int index
 
       if(size == 0){
         bzero(buffer,256);
-        sprintf(buffer, "%s,%d;\n", username, n_of_seats);
+        sprintf(buffer, "%s,%d;", username, n_of_seats);
         size = write(fd_temp, buffer, strlen(buffer));
         close(fd_temp);
         if( size <= 0)
@@ -228,7 +228,6 @@ int EventAddRegistry(char *event_file, char *username, int n_of_seats, int index
       for(i = 0; i < size && i < 32; i++)
         user[i] = buffer[i];
       user[i] = 0;
-
       if(strcmp(user, username) == 0){
         close(fd_temp);
         return ALREADY_REGISTERED;
@@ -344,7 +343,8 @@ int SearchUserInFile(char *event_file, char *username, int index, char *info){
         break;
       if(a == ','){
         info[k] = 0;
-        if(strcmp(info,username)){
+
+        if(strcmp(info,username) == 0){
              name_found = 1;
         }
         info[k] = ',';

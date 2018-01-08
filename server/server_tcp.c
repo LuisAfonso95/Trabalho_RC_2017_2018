@@ -229,7 +229,7 @@ void dostuff (int sock) {
             if (n < 0) error("ERROR writing to socket");
       }
 
-      /* ======== Command REGISTEREVENT ========  */
+      /* ======== Command REGISTEREVENT - option 4 ========  */
       else if(strcmp(buffer, "REGISTEREVENT") == 0)
       {
 
@@ -293,7 +293,7 @@ void dostuff (int sock) {
 
       }
 
-      /* ======== Command SHOWREGLIST ========  */
+      /* ======== Command SHOWREGLIST - option 5 ========  */
       else if(strcmp(buffer, "SHOWREGISTERED") == 0)
       {
         printf("User %s, requested to see registered events\n ", User);
