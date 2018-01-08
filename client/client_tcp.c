@@ -284,11 +284,10 @@ int main(int argc, char *argv[]) {
         else if(option == 5 && connected_to_server == 1){
             /* Option 5 option prints on screen the registrations performed by the user.*/
 
-            if(connected_to_server == 1){
                 printf("Requesting event registrations\n");
 
                 //need to send request for list "REGISTEREVENT"
-                 n = write(sockfd,"REGISTEREVENT",strlen("REGISTEREVENT")+1);
+                 n = write(sockfd,"SHOWREGISTERED",strlen("SHOWREGISTERED")+1);
                  if (n < 0) fprintf(stderr,"\n\nERROR writing to socket");
                  //WaitACK(sockfd);
                                 
@@ -305,7 +304,6 @@ int main(int argc, char *argv[]) {
                     else
                         break; 
                 }
-            }
         } 
 
     }

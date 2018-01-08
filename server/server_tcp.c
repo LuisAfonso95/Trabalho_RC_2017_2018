@@ -287,8 +287,9 @@ void dostuff (int sock) {
       }
 
       /* ======== Command SHOWREGLIST ========  */
-      else if(strcmp(buffer, "REGISTEREVENT") == 0)
+      else if(strcmp(buffer, "SHOWREGISTERED") == 0)
       {
+        printf("User %s, requested to see registered events\n ", User);
         int t = 0;
         int k = 0;
         int sendbuff[256];
@@ -298,6 +299,7 @@ void dostuff (int sock) {
           t = SearchUserInFile(EVENT_LIST_FILE, User, k, sendbuff);
           k++;
           if(t >= 0){
+                printf("%s\n",sendbuff);
                 n = write(sock,sendbuff,strlen(sendbuff)+1);
                 if (n < 0) error("ERROR writing to socket");
           }
