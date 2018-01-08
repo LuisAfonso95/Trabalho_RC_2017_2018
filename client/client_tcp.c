@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
                  if (n < 0) fprintf(stderr,"\n\nERROR writing to socket");
                  //WaitACK(sockfd);
                                 
-                int counter = 0;
+                //int counter = 0;
                 while(1){
                     bzero(buffer,256);
                     n = read(sockfd,buffer,255);
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
                     if(strcmp(buffer,"\0") != 0){
                         //printf("User: %s, selected event %d, number of seats %d\n",User, event, seats);
                         printf("User: %s\n", buffer); 
-                        counter++;
+                        //counter++;
                     }   
                     else
                         break; 

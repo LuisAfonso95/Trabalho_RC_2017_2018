@@ -18,6 +18,13 @@
 #include <string.h>
 
 #include <errno.h>
+#include <sys/stat.h> 
+#include <fcntl.h> 
+#include <unistd.h> 
+
+
+
+#
 
 #include "filelist_util.h"
 //===================================================================
@@ -292,14 +299,14 @@ void dostuff (int sock) {
         printf("User %s, requested to see registered events\n ", User);
         int t = 0;
         int k = 0;
-        int sendbuff[256];
+        char sendbuff[256];
 
         do{
           bzero(sendbuff,256);
           t = SearchUserInFile(EVENT_LIST_FILE, User, k, sendbuff);
           k++;
           if(t >= 0){
-                printf("%s\n",sendbuff);
+                printf("Found: %s\n",sendbuff);
                 n = write(sock,sendbuff,strlen(sendbuff)+1);
                 if (n < 0) error("ERROR writing to socket");
           }

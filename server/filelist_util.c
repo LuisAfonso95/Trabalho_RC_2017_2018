@@ -326,8 +326,7 @@ int SearchUserInFile(char *event_file, char *username, int index, char *info){
   char a = 0;
   int size=0;
   int name_found = 0;
-  char buffer[30];
-  bzero(buffer,30);
+  bzero(info,30);
   while(1){
 
     int k =0;
@@ -339,29 +338,30 @@ int SearchUserInFile(char *event_file, char *username, int index, char *info){
         return -1;
       }
 
-      buffer[k] = a;
+      info[k] = a;
 
       if( size <= 0)
         break;
       if(a == ','){
-        buffer[k] = 0;
-        if(strcmp(buffer,username)){
+        info[k] = 0;
+        if(strcmp(info,username)){
              name_found = 1;
         }
-        buffer[k] = ',';
+        info[k] = ',';
       }
       k++;
     }while(a != ';' );
 
     if(name_found == 1){
-      buffer[k] = 0;
+
+      info[k] = 0;
       close(fd_temp);
       return 1;
     }
     
 
 
-    bzero(buffer,30);
+    bzero(info,30);
     k = 0;
 
     if(size == 0){
