@@ -284,9 +284,44 @@ int main(int argc, char *argv[]) {
         else if(option == 5 && connected_to_server == 1){
             /* Option 5 option prints on screen the registrations performed by the user.*/
 
+<<<<<<< HEAD
                 printf("Requesting event registrations\n");
 
                 //need to send request for list "REGISTEREVENT"
+=======
+			/* Connect to server if still hasn't and send user name*/
+            if(connected_to_server == 0){
+
+                sockfd = socket(AF_INET, SOCK_STREAM, 0);
+                bzero((char *) &serv_addr, sizeof(serv_addr)); //clears serv_addr
+                serv_addr.sin_family = AF_INET; 
+                bcopy((char *)server->h_addr, 
+                     (char *)&serv_addr.sin_addr.s_addr,
+                     server->h_length);
+                serv_addr.sin_port = htons(port_Server); //portno must be in network format
+                if (connect(sockfd,&serv_addr,sizeof(serv_addr)) < 0) {
+                    fprintf(stderr,"\n\nERROR connecting\n");
+                
+                }
+                else{
+                    n = write(sockfd,argv[1],strlen(argv[1])+1);
+                    if (n < 0) fprintf(stderr,"\n\nERROR writing to socket");
+                    else{
+                        //if(WaitACK(sockfd) == 1) connected_to_server = 1;
+                       
+                      connected_to_server = 1  ;
+                      printf("Connected to server\n");
+                    } 
+
+
+                }
+            }
+
+            if(connected_to_server == 1){
+                printf("Requesting event registrations\n");
+
+                //need to send request for list "SHOWREGISTERED"
+>>>>>>> origin/master
                  n = write(sockfd,"SHOWREGISTERED",strlen("SHOWREGISTERED")+1);
                  if (n < 0) fprintf(stderr,"\n\nERROR writing to socket");
                  //WaitACK(sockfd);
