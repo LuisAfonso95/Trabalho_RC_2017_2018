@@ -21,7 +21,7 @@
 #include <sys/stat.h> 
 #include <fcntl.h> 
 #include <unistd.h> 
-
+#include <semaphore.h>
 
 
 
@@ -74,6 +74,9 @@ int socketGetFirstString(int sockfd, char *buffer, int max_size){
 
 }
 
+//semaphores for acessing the files
+//sem_t mutex;
+sem_t stop_writers;
 
 #define MAX_PORT_RANGE 65535 
 #define MIN_PORT_RANGE 49152
@@ -100,6 +103,15 @@ int main(int argc, char *argv[]) {
     }
 
 
+    //create the semaphore to access the files
+    /*if( sem_init(&(mutex), 0, 1) == -1) {
+        printf("Error: %s\n", strerror(errno));
+        exit(0);  
+    }*/
+    if( sem_init(&(stop_writers), 0, 1) == -1) {
+        printf("Error: %s\n", strerror(errno));
+        exit(0);
+    }
 
     printf("Starting up the server\n");
 
@@ -173,6 +185,7 @@ void dostuff (int sock) {
     bzero(buffer,256);
     int t = socketGetFirstString(sock, buffer, 256);
 
+    sem_wait(&(stop_writers));
     /* ======== ERROR ========  */
     if(t < 0){
 
@@ -233,47 +246,56 @@ void dostuff (int sock) {
             if (t < 0) error("ERROR reading from socket");
             int seats = atoi(buffer);
             printf("User: %s, selected event %d, number of seats %d\n",User, event, seats);
+           
 
 
-            /* Try to add request to registry */
-            t = EventAddRegistry(EVENT_LIST_FILE, User, seats, event);
-            if(t == ALREADY_REGISTERED){
-              /* If the user already has a entry in the event, send error message */
-              printf("ALREADYREGISTERED\n");
-              n = write(sock,"ALREADYREGISTERED",strlen("ALREADYREGISTERED")+1);
-              if (n < 0) printf("ERROR writing to socket\n");
-            }
-            /* == Case of not enough seats available */
-            else if(t == NO_SEATS){
-              printf("NO_SEATS\n");
-              n = write(sock,"NO_SEATS",strlen("NO_SEATS")+1);
-              if (n < 0) printf("ERROR writing to socket\n");
-            }
-            else{
-
-              /* send confirmation of success */
-              
-              int number_of_regist = EventCountRegistry(EVENT_LIST_FILE, event);
-
-               bzero(buffer,256);
-              int t = GetEventFixedInfo(EVENT_LIST_FILE, buffer, 256, event);
-
-              if(t == EVENT_NOT_FOUND){
-                printf("EVENT_NOT_FOUND\n");
-                n = write(sock,"EVENT_NOT_FOUND",strlen("EVENT_NOT_FOUND")+1);
+            /* if number of seats is a valid number */
+            if(seats > 0){
+              /* Try to add request to registry */
+              t = EventAddRegistry(EVENT_LIST_FILE, User, seats, event);
+              if(t == ALREADY_REGISTERED){
+                /* If the user already has a entry in the event, send error message */
+                printf("ALREADYREGISTERED\n");
+                n = write(sock,"ALREADYREGISTERED",strlen("ALREADYREGISTERED")+1);
                 if (n < 0) printf("ERROR writing to socket\n");
               }
-              else if(t < 0){
-                n = write(sock,"ERROR",strlen("ERROR")+1);
+              /* == Case of not enough seats available */
+              else if(t == NO_SEATS){
+                printf("NO_SEATS\n");
+                n = write(sock,"NO_SEATS",strlen("NO_SEATS")+1);
                 if (n < 0) printf("ERROR writing to socket\n");
-                printf("Error getting info\n");
               }
               else{
-                char writebuffer[256]; bzero(writebuffer,256);
-                sprintf(writebuffer, "Success, %d seats registered to: %s, with a total of %d seats already reserved\n",seats, buffer, number_of_regist);
-                n = write(sock,writebuffer,strlen(writebuffer)+1);
-                if (n < 0) error("ERROR writing to socket");
+
+                /* send confirmation of success */
+                
+                int number_of_regist = EventCountRegistry(EVENT_LIST_FILE, event);
+
+                 bzero(buffer,256);
+                int t = GetEventFixedInfo(EVENT_LIST_FILE, buffer, 256, event);
+
+                if(t == EVENT_NOT_FOUND){
+                  printf("EVENT_NOT_FOUND\n");
+                  n = write(sock,"EVENT_NOT_FOUND",strlen("EVENT_NOT_FOUND")+1);
+                  if (n < 0) printf("ERROR writing to socket\n");
+                }
+                else if(t < 0){
+                  n = write(sock,"ERROR",strlen("ERROR")+1);
+                  if (n < 0) printf("ERROR writing to socket\n");
+                  printf("Error getting info\n");
+                }
+                else{
+                  char writebuffer[256]; bzero(writebuffer,256);
+                  sprintf(writebuffer, "Success, %d seats registered to: %s, with a total of %d seats already reserved\n",seats, buffer, number_of_regist);
+                  n = write(sock,writebuffer,strlen(writebuffer)+1);
+                  if (n < 0) error("ERROR writing to socket");
+                }
               }
+            }
+            else{
+                  n = write(sock,"ERROR",strlen("ERROR")+1);
+                  if (n < 0) printf("ERROR writing to socket\n");
+                  printf("Error, number of seats <= 0\n");
             }
             
 
@@ -319,6 +341,7 @@ void dostuff (int sock) {
 
     }
 
+    sem_post(&(stop_writers));
    }
 
    //---sends message to client...
