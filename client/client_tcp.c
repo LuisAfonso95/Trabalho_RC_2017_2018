@@ -10,6 +10,13 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <string.h>
+
+#include <sys/stat.h> 
+#include <fcntl.h> 
+#include <unistd.h> 
+
+#include <stdlib.h>
+
 //===================================================================
 // error messages: print message and terminate program
 void error(char *msg) {
@@ -33,16 +40,6 @@ const char options[NUMBER_OF_OPTIONS][40] = {
 
 //===================================================================
 
-int WaitACK(int sockfd){
-    char buffer[256];
-    bzero(buffer,256);
-    int n = read(sockfd,buffer,255);
-
-    if (n < 0) fprintf(stderr,"\n\nERROR reading from socket");
-    else if(strcmp("ACK", buffer) == 0) return 1;
-    return 0;
-
-}
 
 int socketGetFirstString(int sockfd, char *buffer, int max_size){
   //char buffer[256];
@@ -85,7 +82,7 @@ int main(int argc, char *argv[]) {
         return 0;
 
 
-    int sockfd, portno, n;  //socket file descriptor, port number
+    int sockfd, n;  //socket file descriptor, port number
     struct sockaddr_in serv_addr;  //server address data
     struct hostent *server;
     char buffer[256];  // data (bytes) to be sent to server
@@ -105,11 +102,15 @@ int main(int argc, char *argv[]) {
         printf("\nCurrent event server: %s\n", server->h_name);
         printf("Current port: %d\n", port_Server);
 
-        int i;  
-        for(i = 0; i < NUMBER_OF_OPTIONS; i++){
-            printf("%s",options[i]);
-        }
-
+        int i;
+        if(connected_to_server == 1)  
+            for(i = 0; i < NUMBER_OF_OPTIONS; i++){
+                printf("%s",options[i]);
+            }
+        else
+            for(i = 0; i < NUMBER_OF_OPTIONS-2; i++){
+                printf("%s",options[i]);
+            }
 
 
 
@@ -122,14 +123,19 @@ int main(int argc, char *argv[]) {
 
 
 
-        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-        printf("Selected option:  %s\n", options[option]);
 
+        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         /* Operation based on option selected */
         if(option < 0 || option > NUMBER_OF_OPTIONS-1){
             printf("Invalid option\n");
         }
-        else if(option == 0){
+        else if(connected_to_server == 0 && (option < 0 || option > NUMBER_OF_OPTIONS-1-2) ){
+            printf("Invalid option\n");
+        }
+        else{
+            printf("Selected option:  %s\n", options[option]); 
+        }
+        if(option == 0){
             /* Exit option. Needs to close TCP connection if already established*/
             n = write(sockfd,"STOP",strlen("STOP")+1);
             if (n < 0) fprintf(stderr,"\n\nERROR writing to socket"); 
@@ -298,7 +304,7 @@ int main(int argc, char *argv[]) {
                     if (n < 0) fprintf(stderr,"\n\nERROR reading from socket");
                     if(strcmp(buffer,"END") != 0){
                         //printf("User: %s, selected event %d, number of seats %d\n",User, event, seats);
-                        printf("User: %s\n", buffer); 
+                        printf("%s\n", buffer); 
                         //counter++;
                     }   
                     else

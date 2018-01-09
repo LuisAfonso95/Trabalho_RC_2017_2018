@@ -65,7 +65,7 @@ int socketGetFirstString(int sockfd, char *buffer, int max_size){
     int n = read(sockfd,&a,1);
     if (n < 0){
       printf("ERROR reading from socket");
-      return -1;
+      exit(0);
     }
 
     if(n != 0){
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     /* Create files for each event */
     char buffer[30];
     int i = 0;
-    while(GetEventFromFile(EVENT_LIST_FILE, buffer, 30, i) > 0 ){
+    while(GetEventName(EVENT_LIST_FILE, buffer, 30, i) > 0 ){
       CreateFile(buffer);
       i++;
     }
@@ -192,7 +192,7 @@ void dostuff (int sock) {
     }
     else{
 
-      /* ======== Command STOP ========  */
+      /* ======== Command STOP - option 0========  */
       if(strcmp(buffer, "STOP") == 0){
             printf("User %s, requested connection close\n", User);
             n = write(sock,"STOP",strlen("STOP")+1);
@@ -209,7 +209,7 @@ void dostuff (int sock) {
 
       }
 
-      /* ======== Command LISTEVENTS ========  */
+      /* ======== Command LISTEVENTS - option 3 ========  */
       else if(strcmp(buffer, "LISTEVENTS") == 0){
            printf("Received command to send list of events\n");
 
@@ -266,7 +266,7 @@ void dostuff (int sock) {
 
               /* send confirmation of success */
               
-              int number_of_regist = EventCountRegist(EVENT_LIST_FILE, event);
+              int number_of_regist = EventCountRegistry(EVENT_LIST_FILE, event);
 
                bzero(buffer,256);
               int t = GetEventFixedInfo(EVENT_LIST_FILE, buffer, 256, event);
@@ -299,20 +299,35 @@ void dostuff (int sock) {
         printf("User %s, requested to see registered events\n ", User);
         int t = 0;
         int k = 0;
-        char sendbuff[256];
 
+        char userinfo[256];
+        
         do{
-          bzero(sendbuff,256);
-          t = SearchUserInFile(EVENT_LIST_FILE, User, k, sendbuff);
-          k++;
+          bzero(userinfo,256);
+          t = SearchUserInFile(EVENT_LIST_FILE, User, k, userinfo);
           if(t >= 0){
+                char name[64];
+                bzero(name,64);
+                GetEventName(EVENT_LIST_FILE, name, 64, k);
+                char sendbuff[256];
+                bzero(sendbuff,256);
+                sprintf(sendbuff, "Event: %s; %s", name, userinfo);
                 printf("Found: %s\n",sendbuff);
                 n = write(sock,sendbuff,strlen(sendbuff)+1);
                 if (n < 0) error("ERROR writing to socket");
           }
+          k++;
         }while(t >= 0 || t == USER_NOT_FOUND);
         n = write(sock,"END",strlen("END")+1);
         if (n < 0) error("ERROR writing to socket");
+      }
+
+
+      /* ======= Command Unknow command  ======== */
+      else{
+        printf("Unknow command\n");
+        n = write(sock,"ERROR",strlen("ERROR")+1);
+        if (n < 0) printf("ERROR writing to socket\n");
       }
 
     }

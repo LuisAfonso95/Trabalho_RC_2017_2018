@@ -8,13 +8,15 @@
 #include <sys/types.h> 
 
 #include "filelist_util.h"
+
+
 /* Gets all data from a event based on index */
-int GetEventAllFromFile(char *event_file, char *event, int max_size, int index){
+int GetEventFullInfo(char *event_file, char *event, int max_size, int index){
     char buffer[1024];
 
     int fd_list = open(event_file, O_RDONLY, (S_IRUSR | S_IWUSR));
     if(fd_list < 0){
-      printf("Error opening the file in GetEventAllFromFile: %s\n", strerror(errno));
+      printf("Error opening the file in GetEventFullInfo: %s\n", strerror(errno));
       return ERROR;
     }
     char a = 0;
@@ -68,8 +70,9 @@ int GetEventAllFromFile(char *event_file, char *event, int max_size, int index){
 
 }
 
+/* Get a event name, location, date and duration based on index */
 int GetEventFixedInfo(char *event_file, char *event, int max_size, int index){
-  int t = GetEventAllFromFile(event_file, event,  max_size,  index);
+  int t = GetEventFullInfo(event_file, event,  max_size,  index);
   if(t < 0)
     return t;
   int k=0;
@@ -93,13 +96,13 @@ int counter = 0;
 }
 
 /* Gets event/filename based on index */
-int GetEventFromFile(char *event_file, char *event, int max_size, int index){
+int GetEventName(char *event_file, char *event, int max_size, int index){
 
-    int t = GetEventAllFromFile(event_file, event,  max_size,  index);
+  int t = GetEventFullInfo(event_file, event,  max_size,  index);
   if(t < 0)
     return t;
   int k=0;
-int counter = 0;
+  int counter = 0;
   while(1){
 
     if(event[k] == ','){
@@ -140,13 +143,14 @@ int CreateFile(char *file_name){
             exit(0);
           }
         }*/ 
+      return 0;
 }
 
 
-
+/* Check the event maximum seats (total of the event) field based on index */
 int EventCheckMaxEntries(char *event_file, int index){
   char event[256];
-  int t = GetEventAllFromFile(event_file, event,  256,  index);
+  int t = GetEventFullInfo(event_file, event,  256,  index);
   if(t < 0)
     return t;
   int k=0;
@@ -173,11 +177,13 @@ int EventCheckMaxEntries(char *event_file, int index){
   return number;
 
 }
+
+
 /* Adds username entry to event. Also checks if user already registered and returns ALREADY_REGISTERED if it is */
 int EventAddRegistry(char *event_file, char *username, int n_of_seats, int index){
   char buffer[256];
   bzero(buffer,256);
-  int t = GetEventFromFile(event_file, buffer, 256, index);
+  int t = GetEventName(event_file, buffer, 256, index);
   if(t < 0)
     return t;
 
@@ -245,11 +251,13 @@ int EventAddRegistry(char *event_file, char *username, int n_of_seats, int index
 
 }
 
-int EventCountRegist(char *event_file, int index){
+
+/* Counts how many seats are reserved/ocupied for an event, based on index */
+int EventCountRegistry(char *event_file, int index){
 
   char event_name[256];
   bzero(event_name,256);
-  int t = GetEventFromFile(event_file, event_name, 256, index);
+  int t = GetEventName(event_file, event_name, 256, index);
   if(t < 0)
     return t;
 
@@ -301,18 +309,20 @@ int EventCountRegist(char *event_file, int index){
 }
 
 
+/* Cehck number of available seats to be reserved on a event, based on index */
 int EventAvailability(char *event_file, int index){
-  return EventCheckMaxEntries(event_file, index)-EventCountRegist(event_file, index);
+  return EventCheckMaxEntries(event_file, index)-EventCountRegistry(event_file, index);
 
 }
 
 
+/* Checks if user is registered in a certain event, based on index. Returns by parameter the seats ocupied */
 int SearchUserInFile(char *event_file, char *username, int index, char *info){
 
 
   char event_name[256];
   bzero(event_name,256);
-  int t = GetEventFromFile(event_file, event_name, 256, index);
+  int t = GetEventName(event_file, event_name, 256, index);
   if(t < 0)
     return t;
 
