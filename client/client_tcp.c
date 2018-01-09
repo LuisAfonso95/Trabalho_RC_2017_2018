@@ -135,22 +135,28 @@ int main(int argc, char *argv[]) {
         else{
             printf("Selected option:  %s\n", options[option]); 
         }
+
+        /* ======== Exit and close connection - option 0 ========  */
         if(option == 0){
             /* Exit option. Needs to close TCP connection if already established*/
-            n = write(sockfd,"STOP",strlen("STOP")+1);
-            if (n < 0) fprintf(stderr,"\n\nERROR writing to socket"); 
-            n = socketGetFirstString(sockfd, buffer, 255);
-            if (n < 0) fprintf(stderr,"\n\nERROR reading from socket");
-            else{
-                if(strcmp(buffer, "STOP") == 0){
-                     close(sockfd);
-                     exit(0);
-                }
+            if(connected_to_server == 1){
+                n = write(sockfd,"STOP",strlen("STOP")+1);
+                if (n < 0) fprintf(stderr,"\n\nERROR writing to socket"); 
+                n = socketGetFirstString(sockfd, buffer, 255);
+                if (n < 0) fprintf(stderr,"\n\nERROR reading from socket");
                 else{
-                    printf("Error closing connection. Please try again\n");
-                }  
+                    if(strcmp(buffer, "STOP") == 0){
+                         close(sockfd);
+                         exit(0);
+                    }
+                    else{
+                        printf("Error closing connection. Please try again\n");
+                    }  
+                }
             }
         }
+
+        /* ======== Change IP of the server - option 1 ========  */
         else if(option == 1){
             /* Option 1 just asks for a new IP for the server */
              struct hostent *temp_server;
@@ -179,6 +185,8 @@ int main(int argc, char *argv[]) {
 
         }
 
+
+        /* ======== Change port number of the server - option 2 ========  */
         else if(option == 2){
             /* Option 2 just asks for a new port number of the server */
             int new_port = -1;
@@ -201,6 +209,8 @@ int main(int argc, char *argv[]) {
 
 
         }
+
+        /* ======== Command LISTEVENTS - option 3 ========  */
         else if(option == 3){
             /* Option 3 will establisha connection, if it still hasn't, and request event list */
 
@@ -258,6 +268,8 @@ int main(int argc, char *argv[]) {
             
 
         }
+
+        /* ======== Command REGISTEREVENT - option 4 ========  */
         else if(option == 4 && connected_to_server == 1){
             /* Option 4 will send command to register then send event number and number of seats*/
 
@@ -292,20 +304,17 @@ int main(int argc, char *argv[]) {
 
                 printf("Requesting event registrations\n");
 
-                //need to send request for list "REGISTEREVENT"
+                //need to send request for list "SHOWREGISTERED"
                  n = write(sockfd,"SHOWREGISTERED",strlen("SHOWREGISTERED")+1);
                  if (n < 0) fprintf(stderr,"\n\nERROR writing to socket");
-                 //WaitACK(sockfd);
-                               
-                //int counter = 0;
+
+
                 while(1){
                     bzero(buffer,256);
                     n = socketGetFirstString(sockfd, buffer, 255);
                     if (n < 0) fprintf(stderr,"\n\nERROR reading from socket");
                     if(strcmp(buffer,"END") != 0){
-                        //printf("User: %s, selected event %d, number of seats %d\n",User, event, seats);
                         printf("%s\n", buffer); 
-                        //counter++;
                     }   
                     else
                         break; 

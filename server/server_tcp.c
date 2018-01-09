@@ -24,7 +24,7 @@
 
 
 
-#
+
 
 #include "filelist_util.h"
 //===================================================================
@@ -36,19 +36,6 @@ void error(char *msg) {
     exit(1);
 }
 //===================================================================
-
-
-struct event_list{
-  char *event;
-  char *location;
-  char *date;
-  int duration; //in hours
-  int seats;
-  struct event_list* next;
-}typedef event_list_s;
-
-
-event_list_s *ListOfEvents = NULL;
 
 
 
